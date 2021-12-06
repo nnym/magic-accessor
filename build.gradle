@@ -1,0 +1,31 @@
+plugins {
+    id("java")
+}
+
+sourceSets {
+    main {
+        java.srcDir("source")
+    }
+
+    test {
+        java.srcDir("test")
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    maven {url = "https://maven.auoeke.net"}
+}
+
+dependencies {
+    implementation("org.ow2.asm:asm-tree:latest.release")
+    implementation("net.gudenau.lib:unsafe:latest.release")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+test {
+    useJUnitPlatform()
+}
