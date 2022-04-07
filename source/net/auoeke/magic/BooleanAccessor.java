@@ -37,8 +37,8 @@ abstract class BooleanAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Boolean) this.getBoolean(object);
+    public Boolean get(Object object) {
+        return this.getBoolean(object);
     }
 
     @Override

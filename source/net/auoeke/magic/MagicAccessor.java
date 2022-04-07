@@ -41,7 +41,7 @@ public abstract class MagicAccessor {
 
     public abstract double getDouble(Object object);
 
-    public abstract <T> T get(Object object);
+    public abstract Object get(Object object);
 
     public abstract void setBoolean(Object object, boolean value);
 
@@ -93,7 +93,7 @@ public abstract class MagicAccessor {
         return this.getDouble(null);
     }
 
-    public final <T> T get() {
+    public final Object get() {
         return this.get(null);
     }
 

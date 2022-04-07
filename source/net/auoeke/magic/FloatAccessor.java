@@ -37,8 +37,8 @@ abstract class FloatAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Float) this.getFloat(object);
+    public Float get(Object object) {
+        return this.getFloat(object);
     }
 
     @Override

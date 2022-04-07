@@ -37,8 +37,8 @@ abstract class ByteAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Byte) this.getByte(object);
+    public Byte get(Object object) {
+        return this.getByte(object);
     }
 
     @Override

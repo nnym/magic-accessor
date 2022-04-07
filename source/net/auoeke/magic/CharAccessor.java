@@ -37,8 +37,8 @@ abstract class CharAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Character) this.getChar(object);
+    public Character get(Object object) {
+        return this.getChar(object);
     }
 
     @Override

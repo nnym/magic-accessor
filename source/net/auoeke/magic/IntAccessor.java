@@ -37,8 +37,8 @@ abstract class IntAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Integer) this.getInt(object);
+    public Integer get(Object object) {
+        return this.getInt(object);
     }
 
     @Override

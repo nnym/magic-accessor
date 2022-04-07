@@ -37,8 +37,8 @@ abstract class LongAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Long) this.getLong(object);
+    public Long get(Object object) {
+        return this.getLong(object);
     }
 
     @Override

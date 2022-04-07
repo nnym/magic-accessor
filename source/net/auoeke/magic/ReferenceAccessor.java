@@ -8,37 +8,37 @@ abstract class ReferenceAccessor extends MagicAccessor {
 
     @Override
     public byte getByte(Object object) {
-        return this.get(object);
+        return (byte) this.get(object);
     }
 
     @Override
     public char getChar(Object object) {
-        return this.get(object);
+        return (char) this.get(object);
     }
 
     @Override
     public short getShort(Object object) {
-        return this.get(object);
+        return (short) this.get(object);
     }
 
     @Override
     public int getInt(Object object) {
-        return this.get(object);
+        return (int) this.get(object);
     }
 
     @Override
     public long getLong(Object object) {
-        return this.get(object);
+        return (long) this.get(object);
     }
 
     @Override
     public float getFloat(Object object) {
-        return this.get(object);
+        return (float) this.get(object);
     }
 
     @Override
     public double getDouble(Object object) {
-        return this.get(object);
+        return (double) this.get(object);
     }
 
     @Override

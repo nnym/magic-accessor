@@ -37,8 +37,8 @@ abstract class ShortAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Short) this.getShort(object);
+    public Short get(Object object) {
+        return this.getShort(object);
     }
 
     @Override

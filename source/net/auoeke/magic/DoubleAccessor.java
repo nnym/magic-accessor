@@ -37,8 +37,8 @@ abstract class DoubleAccessor extends MagicAccessor {
     }
 
     @Override
-    public <T> T get(Object object) {
-        return (T) (Double) this.getDouble(object);
+    public Double get(Object object) {
+        return this.getDouble(object);
     }
 
     @Override
