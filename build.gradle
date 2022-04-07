@@ -1,21 +1,10 @@
 plugins {
     id("java")
+    id("gronk").version("latest.release")
 }
 
-sourceSets {
-    main {
-        java.srcDir("source")
-    }
-
-    test {
-        java.srcDir("test")
-    }
-}
-
-repositories {
-    mavenCentral()
-
-    maven {url = "https://maven.auoeke.net"}
+gronk {
+    uncheck()
 }
 
 dependencies {

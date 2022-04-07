@@ -22,13 +22,7 @@ public abstract class MagicAccessor {
     }
 
     public static MagicAccessor access(Class type, String field) {
-        return fields(type).computeIfAbsent(field, field1 -> {
-            try {
-                return compute(type, field1, type.getDeclaredField(field1));
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return fields(type).computeIfAbsent(field, f -> compute(type, f, type.getDeclaredField(f)));
     }
 
     public abstract boolean getBoolean(Object object);
@@ -103,115 +97,97 @@ public abstract class MagicAccessor {
         return this.get(null);
     }
 
-    public final void setBoolean(boolean b) {
-        this.setBoolean(null, b);
+    public final void setBoolean(boolean value) {
+        this.setBoolean(null, value);
     }
 
-    public final void setByte(byte b) {
-        this.setByte(null, b);
+    public final void setByte(byte value) {
+        this.setByte(null, value);
     }
 
-    public final void setChar(char c) {
-        this.setChar(null, c);
+    public final void setChar(char value) {
+        this.setChar(null, value);
     }
 
-    public final void setShort(short s) {
-        this.setShort(null, s);
+    public final void setShort(short value) {
+        this.setShort(null, value);
     }
 
-    public final void setInt(int i) {
-        this.setInt(null, i);
+    public final void setInt(int value) {
+        this.setInt(null, value);
     }
 
-    public final void setLong(long l) {
-        this.setLong(null, l);
+    public final void setLong(long value) {
+        this.setLong(null, value);
     }
 
-    public final void setFloat(float f) {
-        this.setFloat(null, f);
+    public final void setFloat(float value) {
+        this.setFloat(null, value);
     }
 
-    public final void setDouble(double d) {
-        this.setDouble(null, d);
+    public final void setDouble(double value) {
+        this.setDouble(null, value);
     }
 
-    public final void set(Object p) {
-        this.set(null, p);
+    public final void set(Object value) {
+        this.set(null, value);
     }
 
     private static Map<String, MagicAccessor> fields(Class c) {
         return fields.computeIfAbsent(c, c1 -> new HashMap<>());
     }
 
-    private static MagicAccessor compute(Class c, String f, Field f1) {
-        var t = f1.getType();
-        Class sc;
+    private static MagicAccessor compute(Class owner, String name, Field field) {
+        var type = field.getType();
+        var accessorType = type == boolean.class ? BooleanAccessor.class
+            : type == byte.class ? ByteAccessor.class
+            : type == char.class ? CharAccessor.class
+            : type == short.class ? ShortAccessor.class
+            : type == int.class ? IntAccessor.class
+            : type == long.class ? LongAccessor.class
+            : type == float.class ? FloatAccessor.class
+            : type == double.class ? DoubleAccessor.class
+            : ReferenceAccessor.class;
 
-        if (t.isPrimitive()) {
-            if (t == boolean.class) sc = BooleanAccessor.class;
-            else if (t == byte.class) sc = ByteAccessor.class;
-            else if (t == char.class) sc = CharAccessor.class;
-            else if (t == short.class) sc = ShortAccessor.class;
-            else if (t == int.class) sc = IntAccessor.class;
-            else if (t == long.class) sc = LongAccessor.class;
-            else if (t == float.class) sc = FloatAccessor.class;
-            else if (t == double.class) sc = DoubleAccessor.class;
-            else throw new AssertionError();
+        var accessorName = accessorType.getName().replace('.', '/');
+        var accessorNode = new ClassNode();
+        accessorNode.visit(Opcodes.V1_8, 0, String.join("$", accessorName, owner.getName().replace('.', '_'), name), null, accessorName, null);
+
+        var typeName = type.isPrimitive() ? type.getName().transform(m -> Character.toUpperCase(m.charAt(0)) + m.substring(1)) : "";
+        var asmType = Type.getType(type);
+        var descriptor = asmType.getDescriptor();
+        var getter = accessorNode.visitMethod(0, "get" + typeName, "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+        var setter = (MethodNode) accessorNode.visitMethod(0, "set" + typeName, "(Ljava/lang/Object;%s)V".formatted(type.isPrimitive() ? descriptor : "Ljava/lang/Object;"), null, null);
+        var ownerName = owner.getName().replace('.', '/');
+        int getOpcode;
+        int putOpcode;
+
+        if (Modifier.isStatic(field.getModifiers())) {
+            putOpcode = Opcodes.PUTSTATIC;
+            getOpcode = Opcodes.GETSTATIC;
         } else {
-            sc = ReferenceAccessor.class;
+            putOpcode = Opcodes.PUTFIELD;
+            getOpcode = Opcodes.GETFIELD;
+
+            getter.visitVarInsn(Opcodes.ALOAD, 1);
+            setter.visitVarInsn(Opcodes.ALOAD, 1);
         }
 
-        var scn = sc.getName().replace('.', '/');
-        var n = new ClassNode();
-        n.visit(Opcodes.V1_8, 0, String.join("$", scn, c.getName().replace('.', '_'), f), null, scn, null);
+        getter.visitFieldInsn(getOpcode, ownerName, name, descriptor);
+        getter.visitInsn(asmType.getOpcode(Opcodes.IRETURN));
+        setter.visitVarInsn(asmType.getOpcode(Opcodes.ILOAD), 2);
+        setter.visitFieldInsn(putOpcode, ownerName, name, descriptor);
+        setter.visitInsn(Opcodes.RETURN);
 
-        String mn;
+        var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        accessorNode.accept(writer);
 
-        if (t.isPrimitive()) {
-            mn = t.getName();
-            mn = Character.toUpperCase(mn.charAt(0)) + mn.substring(1);
-        } else {
-            mn = "";
-        }
-
-        var t1 = Type.getType(t);
-        var td = t1.getDescriptor();
-        var g = n.visitMethod(0, "get" + mn, "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
-        var s = (MethodNode) n.visitMethod(0, "set" + mn, "(Ljava/lang/Object;%s)V".formatted(t.isPrimitive() ? td : "Ljava/lang/Object;"), null, null);
-        var cn = c.getName().replace('.', '/');
-        int go;
-        int po;
-
-        if (Modifier.isStatic(f1.getModifiers())) {
-            po = Opcodes.PUTSTATIC;
-            go = Opcodes.GETSTATIC;
-        } else {
-            po = Opcodes.PUTFIELD;
-            go = Opcodes.GETFIELD;
-
-            g.visitVarInsn(Opcodes.ALOAD, 1);
-            s.visitVarInsn(Opcodes.ALOAD, 1);
-        }
-
-        g.visitFieldInsn(go, cn, f, td);
-        g.visitInsn(t1.getOpcode(Opcodes.IRETURN));
-        s.visitVarInsn(t1.getOpcode(Opcodes.ILOAD), 2);
-        s.visitFieldInsn(po, cn, f, td);
-        s.visitInsn(Opcodes.RETURN);
-
-        var w = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        n.accept(w);
-
-        return (MagicAccessor) Unsafe.allocateInstance(Definer.define(w.toByteArray(), true));
+        return (MagicAccessor) Unsafe.allocateInstance(Definer.define(writer.toByteArray(), true));
     }
 
     static {
-        try {
-            if (MagicAccessor.class.getSuperclass().getSuperclass() != Class.forName("jdk.internal.reflect.MagicAccessorImpl")) {
-                throw new IllegalStateException("%s must be defined through %s.".formatted(MagicAccessor.class.getName(), Definer.class.getName()));
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        if (MagicAccessor.class.getSuperclass().getSuperclass() != Class.forName("jdk.internal.reflect.MagicAccessorImpl")) {
+            throw new IllegalStateException("%s must be defined through %s".formatted(MagicAccessor.class.getName(), Definer.class.getName()));
         }
     }
 }
