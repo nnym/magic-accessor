@@ -8,10 +8,10 @@ gronk {
 }
 
 dependencies {
-    implementation("org.ow2.asm:asm-tree:latest.release")
-    implementation("net.gudenau.lib:unsafe:latest.release")
+    implementation("org.ow2.asm:asm-tree")
+    implementation("net.gudenau.lib:unsafe")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 

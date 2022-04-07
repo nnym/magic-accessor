@@ -19,7 +19,7 @@ public class Definer {
             node.visit(Opcodes.V1_8, 0, pkg + "/internal MagicAccessor", null, "jdk/internal/reflect/MagicAccessorImpl", null);
             var writer = new ClassWriter(0);
             node.accept(writer);
-            define(node.name, writer.toByteArray(), Class.forName("jdk.internal.reflect.MagicAccessorImpl").getClassLoader(), Definer.class.getProtectionDomain());
+            define(writer.toByteArray(), Class.forName("jdk.internal.reflect.MagicAccessorImpl").getClassLoader(), Definer.class.getProtectionDomain());
 
             try (var magicAccessor = Definer.class.getClassLoader().getResourceAsStream(pkg + "/MagicAccessor.class")) {
                 new ClassReader(magicAccessor.readAllBytes()).accept(node, 0);
@@ -38,7 +38,7 @@ public class Definer {
         return hidden ? lookup.defineHiddenClass(bytecode, false).lookupClass() : lookup.defineClass(bytecode);
     }
 
-    private static Class<?> define(String name, byte[] b, ClassLoader cl, ProtectionDomain pd) {
-        return Unsafe.defineClass(name.replace('/', '.'), b, 0, b.length, cl, pd);
+    private static Class<?> define(byte[] classFile, ClassLoader loader, ProtectionDomain domain) {
+        return Unsafe.defineClass(null, classFile, 0, classFile.length, loader, domain);
     }
 }

@@ -133,8 +133,8 @@ public abstract class MagicAccessor {
         this.set(null, value);
     }
 
-    private static Map<String, MagicAccessor> fields(Class c) {
-        return fields.computeIfAbsent(c, c1 -> new HashMap<>());
+    private static Map<String, MagicAccessor> fields(Class type) {
+        return fields.computeIfAbsent(type, t -> new HashMap<>());
     }
 
     private static MagicAccessor compute(Class owner, String name, Field field) {
