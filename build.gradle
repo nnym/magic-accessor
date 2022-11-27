@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("gronk").version("latest.release")
+    id("net.auoeke.gronk").version("latest.release")
 }
 
 gronk {
@@ -9,7 +9,7 @@ gronk {
 
 dependencies {
     implementation("org.ow2.asm:asm-tree")
-    implementation("net.gudenau.lib:unsafe")
+    implementation("net.auoeke:unsafe")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
